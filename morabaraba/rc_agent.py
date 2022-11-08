@@ -55,7 +55,7 @@ class AI(MorabarabaPlayer):
         board = state.get_board()
         act = action.get_action_as_dict()
         if(act['action_type'] == MorabarabaActionType.STEAL):
-            cell = act['action']['at']
+            [False, []]
         else:
             cell = act['action']['to']
         player_mills = []
@@ -81,7 +81,12 @@ class AI(MorabarabaPlayer):
         return [ is_mill , player_mills ]
 
     def minimax(self, state, d, player):
-        if(d == 0 or MorabarabaRules.is_end_game(state)):
+        #Si c'est le premier coup
+        #if((state.in_hand[player] == state.in_hand[player * -1]) and (state.in_hand[player] == )): 
+        if(len(state.get_board().get_player_pieces_on_board(Color(player))) == 0):
+            print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>FIRST MOVE")
+            return 0, MorabarabaRules.random_play(state, player)
+        elif(d == 0 or MorabarabaRules.is_end_game(state)):
             return state.score[self.position] - state.score[-1 * self.position], MorabarabaRules.random_play(state, player)
             #results = SeegaRules.get_results(state)
             #if(results['tie']):
@@ -97,6 +102,7 @@ class AI(MorabarabaPlayer):
             # D É F E N S E
             opponent_possibilities = {}
             opponent_possibilities['score'] = []
+            opponent_mills_list = []
             if(state.mill):
                 #Empêcher ses mills par mes STEAL
                 state_copy = MorabarabaState(state.get_board(), state.get_next_player())
@@ -116,8 +122,23 @@ class AI(MorabarabaPlayer):
                 state_copy.before_latest_player1_move= state.before_latest_player1_move.copy()
                 state_copy.before_latest_player2_move= state.before_latest_player2_move.copy()
                 state_copy.fly_moves = state.fly_moves
-
                 opponent_possibilities['action'] = MorabarabaRules.get_player_actions(state_copy, player * -1)
+                if(len(opponent_possibilities['action']) != 0):
+                    for possibility in opponent_possibilities['action']:
+                        _, mills = self.is_a_mill_move(state, player * -1, possibility)
+                        opponent_mills_list.append(mills)
+                        opponent_possibilities['score'].append(len(mills))
+                    maxScore = max(opponent_possibilities['score'])
+                    index_maxScore = opponent_possibilities['score'].index(maxScore)
+                    if(maxScore):
+                        actionToBlock = opponent_possibilities['action'][index_maxScore].get_action_as_dict()['action']
+                        if(opponent_possibilities['action'][0].get_action() == "ADD"):
+                            for mill in opponent_mills_list[index_maxScore]:
+                                for cell in mill:
+                                    if(cell != actionToBlock['to']):
+                                        return maxScore, MorabarabaAction(action_type=MorabarabaActionType.STEAL, at=cell)
+                        else:
+                            return maxScore, MorabarabaAction(action_type=MorabarabaActionType.STEAL, at=actionToBlock['at'])
             else:
                 #Voir si je peux faire mill
                 my_possibilities = {}
@@ -136,8 +157,6 @@ class AI(MorabarabaPlayer):
 
                 #Empêcher ses mills par mes ADD, MOVE ou FLY
                 opponent_possibilities['action'] = MorabarabaRules.get_player_actions(state, player * -1)
-                opponent_possibilities['score'] = []
-                opponent_mills_list = []
                 if(len(opponent_possibilities['action']) != 0):
                     for possibility in opponent_possibilities['action']:
                         _, mills = self.is_a_mill_move(state, player * -1, possibility)
@@ -146,16 +165,9 @@ class AI(MorabarabaPlayer):
                     maxScore = max(opponent_possibilities['score'])
                     if(maxScore):
                         actionToBlock = opponent_possibilities['action'][opponent_possibilities['score'].index(maxScore)].get_action_as_dict()['action']
-                        
                         if(len(my_possibilities['action'] ) != 0):
                             if(my_possibilities['action'][0].get_action() == "ADD"):
                                 return maxScore, MorabarabaAction(action_type=MorabarabaActionType.ADD, to=actionToBlock['to'])
-                            elif(my_possibilities['action'][0].get_action() == "STEAL"):
-                                for mills in opponent_mills_list[maxScore]:
-                                    for mill in mills:
-                                        for cell in mill:
-                                            if(cell != actionToBlock['to']):
-                                                return maxScore, MorabarabaAction(action_type=MorabarabaActionType.STEAL, at=cell)
                             else:
                                 for possibility in my_possibilities['action']:
                                     if(possibility.get_action_as_dict()['action']['to'] == actionToBlock['to']):
