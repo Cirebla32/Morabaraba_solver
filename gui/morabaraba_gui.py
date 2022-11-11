@@ -180,7 +180,7 @@ class MorabarabaGUI(QMainWindow):
             MorabarabaRules.moment_player(self.state)
             self.current_player = self.state.get_next_player()
             return True
-
+                                   
     def play_game(self):
         hit = 0
         timer_first_player = Timer("first_player", total_time=self.allowed_time, logger=None)
