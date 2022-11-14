@@ -46,6 +46,7 @@ class AI(MorabarabaPlayer):
         Args:
             action_type (MorabarabaActionType): The type of the performed action.
         """
+        print("<<<<<<<<<<<<",self.which_actions_r_guessed_2_b_the_best(state, self.position), ">>>>>>>>>>>")
         board_ndArray = state.get_board()._board_state.__copy__()
         board_ndArray[board_ndArray == Color(-1)] = 2
         board_ndArray[board_ndArray == Color(1)] = Color(-1) 
@@ -241,6 +242,155 @@ class AI(MorabarabaPlayer):
             return (cell[0] + (cell[0] - cell[1]), cell[1])
         return (cell[0], (cell[0] - cell[1]) + cell[1])
 
+    def which_actions_r_guessed_2_b_the_best(self, state, player):
+        if(0):
+            return 0, random_play(state, player)
+        else:
+            #premier coup
+            if(len(state.get_board().get_player_pieces_on_board(Color(player))) == 0):
+                return [MorabarabaRules.random_play(state, player)]
+            # D É F E N S E
+            opponent_possibilities = {}
+            opponent_possibilities['score'] = []
+            opponent_mills_list = []
+            res = []
+            if(state.mill):
+                #Empêcher ses mills par mes STEAL
+                #Faire un deepcopy à la place
+                state_copy = MorabarabaState(state.get_board(), state.get_next_player())
+                state_copy.set_latest_move(state.get_latest_move())
+                state_copy.set_latest_player(state.get_latest_player())
+                state_copy.score = dict(state.score)
+                state_copy.just_stop = state.just_stop
+                state_copy.boring_moves = state.boring_moves
+                state_copy.mill = False
+                state_copy.in_hand = state.in_hand.copy()
+                state_copy.fly_case = state.fly_case
+                state_copy.captured = state.captured
+                state_copy.latest_player1_move = state.latest_player1_move.copy()
+                state_copy.latest_player2_move = state.latest_player2_move.copy()
+                state_copy.before_latest_player1_move= state.before_latest_player1_move.copy()
+                state_copy.before_latest_player2_move= state.before_latest_player2_move.copy()
+                state_copy.fly_moves = state.fly_moves
+                opponent_possibilities['action'] = np.array(MorabarabaRules.get_player_actions(state_copy, player * -1))
+                if(len(opponent_possibilities['action']) != 0):
+                    for possibility in opponent_possibilities['action']:
+                        _, mills = self.is_a_mill_move(state, player * -1, possibility)
+                        opponent_mills_list.append(mills)
+                        opponent_possibilities['score'].append(len(mills))
+                    opponent_possibilities['score'] = np.array(opponent_possibilities['score'])
+                    opponent_mills_list = np.array(opponent_mills_list)
+                    max_score = opponent_possibilities['score'].max()
+                    while(max_score):
+                        if(opponent_possibilities['action'][0].get_action() == "ADD"):
+                            for index in np.linspace(0, opponent_mills_list.size-1, opponent_mills_list.size, dtype=np.int8)[opponent_possibilities['score'] == max_score]:
+                                action_to_block = opponent_possibilities['action'][index].get_action_as_dict()['action']
+                                for mill in opponent_mills_list[index]:
+                                    for cell in mill:
+                                        if cell != action_to_block['to']:
+                                            act = MorabarabaAction(action_type=MorabarabaActionType.STEAL, at=cell)
+                                            if act not in res:
+                                                res.append(MorabarabaAction(action_type=MorabarabaActionType.STEAL, at=cell))
+                        else:
+                            for dangerous_possibility in opponent_possibilities['action'][opponent_possibilities['score'] == max_score]:
+                                act = MorabarabaAction(action_type=MorabarabaActionType.STEAL, at=dangerous_possibility.get_action_as_dict()['action']['at'])
+                                if act not in res:
+                                    res.append(act)
+                        if len(res):
+                            return res
+                        else:
+                            max_score -= 1
+            else:
+                #Voir si je peux faire mill
+                my_possibilities = {}
+                my_possibilities['action'] = np.array(MorabarabaRules.get_player_actions(state, player))
+                np.random.shuffle(my_possibilities['action'])
+                my_possibilities['score_mill'] = []
+                my_possibilities['score_making_mill'] = []
+                if(len(my_possibilities['action']) != 0):
+                    for possibility in my_possibilities['action']:
+                        _, mills = self.is_a_mill_move(state, player, possibility)
+                        my_possibilities['score_mill'].append(len(mills))
+                        _, mills_in_construction = self.is_making_mill(state, player, possibility)
+                        my_possibilities['score_making_mill'].append(mills_in_construction)
+                    my_possibilities['score_mill'] = np.array(my_possibilities['score_mill'])
+                    if my_possibilities['score_mill'].any():
+                        return my_possibilities['action'][my_possibilities['score_mill'] == my_possibilities['score_mill'][my_possibilities['score_mill']>0].min()].tolist()
+
+                #Empêcher ses mills par mes ADD, MOVE ou FLY
+                opponent_possibilities['action'] = np.array(MorabarabaRules.get_player_actions(state, player * -1))
+                if(len(opponent_possibilities['action']) != 0):
+                    for possibility in opponent_possibilities['action']:
+                        _, mills = self.is_a_mill_move(state, player * -1, possibility)
+                        opponent_mills_list.append(mills)
+                        opponent_possibilities['score'].append(len(mills))
+                    opponent_possibilities['score'] = np.array(opponent_possibilities['score'])
+                    max_score = opponent_possibilities['score'].max()
+                    while(max_score):
+                        if(opponent_possibilities['action'][0].get_action() == "ADD"):
+                            for dangerous_possibility in opponent_possibilities['action'][opponent_possibilities['score'] == max_score]:
+                                res.append(MorabarabaAction(action_type=MorabarabaActionType.ADD, to=dangerous_possibility.get_action_as_dict()['action']['to']))
+                        else:
+                            for dangerous_possibility in opponent_possibilities['action'][opponent_possibilities['score'] == max_score]:
+                                cell = dangerous_possibility.get_action_as_dict()['action']['to']
+                                for potential_solution in my_possibilities['action']:
+                                    if potential_solution.get_action_as_dict()['action']['to'] == cell:
+                                        res.append(potential_solution)
+                        if len(res):
+                            return res
+                        else:
+                            max_score -= 1
+
+                    #Utiliser la technique du parcours de carrés
+                    #if(my_possibilities["action"][0].get_action() == "ADD"):
+                    #    n = state.get_board().get_board_state().shape[0]
+                    #    if(player == -1):
+                    #        player_pieces = state.get_board().get_player_pieces_on_board(Color(player))
+                    #        opponent_pieces = self.inverse_board.get_player_pieces_on_board(Color(player))
+                    #    else:
+                    #        player_pieces = self.inverse_board.get_player_pieces_on_board(Color(-1 * player))
+                    #        opponent_pieces = state.get_board().get_player_pieces_on_board(Color(-1 * player))
+                    #    board = state.get_board()
+                    #    board_shape = board.get_board_state().shape
+                    #    cell = self.vip_square
+                    #    cpt = 0
+                    #    for i in range(n+1):
+                    #        cell = AI.next_square_vertex(cell, board_shape)
+                    #        if cell in opponent_pieces: cpt -= 1
+                    #        elif cell in player_pieces: cpt += 1
+                    #    if cpt>0 and AI.next_square_vertex(self.vip_square, board_shape) not in opponent_pieces and AI.next_square_vertex(self.vip_square, board_shape) not in player_pieces:
+                    #        self.vip_square = AI.next_square_head(self.vip_square, board_shape)
+                    #        print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 3")
+                    #        return 0, MorabarabaAction(action_type=MorabarabaActionType.ADD, to=self.vip_square)
+                    #    else:
+                    #        print(self.vip_square)
+                    #        vip_diagonal = AI.which_lines_pass_through(AI.next_square_head(self.vip_square, board_shape), board)["diagonal"]
+                    #        for diaginal_hole in vip_diagonal:
+                    #            cpt = 0
+                    #            cell = diaginal_hole
+                    #            for i in range(n+1):
+                    #                if cell in opponent_pieces: cpt -= 1
+                    #                elif cell in player_pieces: cpt += 1
+                    #                cell = AI.next_square_vertex(cell, board_shape)
+                    #            if cpt>=0 and diaginal_hole not in opponent_pieces and diaginal_hole not in player_pieces:
+                    #                print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 4")
+                    #                self.vip_square = diaginal_hole
+                    #                return 0, MorabarabaAction(action_type=MorabarabaActionType.ADD, to=self.vip_square)
+
+                    #Voir s'il y a une double menace à empêcher
+                    #print("|||||", self.solve_a_menace_from(-1*self.position, state))
+                    menace, cellToBock = self.solve_a_menace_from(-1*player, state)
+                    if(menace):
+                        for possibility in my_possibilities['action']:
+                            if(possibility.get_action_as_dict()['action']['to'] == cellToBock):
+                                res.append(possibility)
+                        if len(res):
+                            return res
+
+                my_possibilities['score_making_mill'] = np.array(my_possibilities['score_making_mill'])
+                if my_possibilities['score_making_mill'].any():
+                    return my_possibilities['action'][my_possibilities['score_making_mill'] == my_possibilities['score_making_mill'].max()].tolist()
+
     def minimax(self, state, d, player):
         #Si c'est le premier coup
         if(len(state.get_board().get_player_pieces_on_board(Color(player))) == 0):
@@ -311,7 +461,9 @@ class AI(MorabarabaPlayer):
                                         return maxScore, MorabarabaAction(action_type=MorabarabaActionType.STEAL, at=cell)
                         else:
                             print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 11")
-                            return maxScore, MorabarabaAction(action_type=MorabarabaActionType.STEAL, at=actionToBlock['at'])
+                            act = MorabarabaAction(action_type=MorabarabaActionType.STEAL, at=actionToBlock['at'])
+                            if act in MorabarabaRules.get_player_actions(state_copy, player):
+                                return maxScore, MorabarabaAction(action_type=MorabarabaActionType.STEAL, at=actionToBlock['at'])
             else:
                 #Voir si je peux faire mill
                 my_possibilities = {}
@@ -374,6 +526,7 @@ class AI(MorabarabaPlayer):
                             print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 3")
                             return 0, MorabarabaAction(action_type=MorabarabaActionType.ADD, to=self.vip_square)
                         else:
+                            print(self.vip_square)
                             vip_diagonal = AI.which_lines_pass_through(AI.next_square_head(self.vip_square, board_shape), board)["diagonal"]
                             for diaginal_hole in vip_diagonal:
                                 cpt = 0
