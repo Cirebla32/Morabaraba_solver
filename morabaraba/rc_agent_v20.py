@@ -244,7 +244,7 @@ class AI(MorabarabaPlayer):
 
     def which_actions_r_guessed_2_b_the_best(self, state, player):
         if(0):
-            return 0, random_play(state, player)
+            return 0, MorabarabaRules.random_play(state, player)
         else:
             #premier coup
             if(len(state.get_board().get_player_pieces_on_board(Color(player))) == 0):

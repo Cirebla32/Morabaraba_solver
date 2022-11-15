@@ -1,0 +1,8 @@
+{
+	"python.condaPath": "c:/ProgramData/Anaconda3/Scripts/conda.exe",
+	"python.pythonPath": "c:/ProgramData/Anaconda3/python.exe",
+	"python.defaultInterpreterPath": "c:/ProgramData/Anaconda3/python.exe",
+	"terminal.integrated.shell.windows": "C:/Program Files/Git/bin/bash.exe",
+	"terminal.integrated.shellArgs.windows": ["-l"],
+	"python.terminal.activateEnvInCurrentTerminal": true
+}
