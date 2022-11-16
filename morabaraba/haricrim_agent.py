@@ -165,10 +165,10 @@ class AI(MorabarabaPlayer):
                 maxEval = max(maxEval, evaluation)
                 if maxEval==evaluation:
                     best_move=move[2]
-                # alpha = max(alpha, maxEval)
-                # if maxEval >= beta:
-                #     print('beta <= alpha, break')
-                #     break
+                alpha = max(alpha, maxEval)
+                if maxEval >= beta:
+                    print('beta <= alpha, break')
+                    break
             # print('alpha', alpha)
             print('maxEval',maxEval,'bestmove = ', best_move)
             
@@ -185,10 +185,10 @@ class AI(MorabarabaPlayer):
                 minEval = min(minEval, evaluation)
                 if minEval==evaluation:
                     best_move=move[2]
-                # beta = min(beta, minEval)
-                # if maxEval <= alpha:
-                #     print('maxEval <= alpha, break')
-                #     break
+                beta = min(beta, minEval)
+                if maxEval <= alpha:
+                    print('maxEval <= alpha, break')
+                    break
             # print('beta', beta)
             print('minEval',minEval,'bestmove = ', best_move)
             # print('minim')
