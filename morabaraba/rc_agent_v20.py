@@ -515,6 +515,8 @@ class AI(MorabarabaPlayer):
                             opponent_pieces = state.get_board().get_player_pieces_on_board(Color(-1 * player))
                         board = state.get_board()
                         board_shape = board.get_board_state().shape
+                        print(board_shape)
+                        print(board_shape[0])
                         cell = self.vip_square
                         cpt = 0
                         for i in range(n+1):

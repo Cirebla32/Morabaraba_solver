@@ -57,7 +57,7 @@ class AI(MorabarabaPlayer):
 
         return self.minimax(state ,self.position ,3)[1]  # 3 is the depth of the tree
         
-    def evaluate(self, state, strategie):
+    def evaluate(self, state, strategie,player):
         """ Return the evaluation of a state for the game.
             prend en argument state et la strategie en cours, et retourne l'evaluation de ce state en fonction de la strategie
             pour la phase de defense, on joue sur le nombre de mills et la possibilité de bloquer l'adversaire(stuck)
@@ -65,28 +65,28 @@ class AI(MorabarabaPlayer):
         """  
         stuck=0
         if strategie=='defense':
-            all_my_mills = state.get_board().player_mills(self.position)
-            all_adv_mills = state.get_board().player_mills(-self.position)
-            if MorabarabaRules.is_player_stuck(state, -self.position):
+            all_my_mills = state.get_board().player_mills(player)
+            all_adv_mills = state.get_board().player_mills(-player)
+            if MorabarabaRules.is_player_stuck(state, -player):
                 stuck=np.inf
             return len(all_my_mills) - len(all_adv_mills) + stuck + self.solve_a_menace_from(state)[2]*10   
         
         if strategie=='attack':
-            my_pieces_on_board=state.get_board().get_player_pieces_on_board(Color(self.position))
-            adv_pieces_on_board=state.get_board().get_player_pieces_on_board(Color(-self.position))
-            if MorabarabaRules.is_player_stuck(state, -self.position):
+            my_pieces_on_board=state.get_board().get_player_pieces_on_board(Color(player))
+            adv_pieces_on_board=state.get_board().get_player_pieces_on_board(Color(-player))
+            if MorabarabaRules.is_player_stuck(state, -player):
                 stuck=np.inf
             return len(my_pieces_on_board) - len(adv_pieces_on_board) + stuck + self.solve_a_menace_from(state)[2]*10   
         
     
         
         
-    def strategie(self,state):
+    def strategie(self,state,player):
         """ Return the best strategie for the game.
             arguments:state
             retourne: 'defense' or 'attack' en fonction du nombre de pions qu'on a en main, ce qui indique la phase actuelle du jeu 
         """  
-        in_my_hand=state.get_player_info(self.position)['in_hand'] #maybe une erreur de synthaxe ici
+        in_my_hand=state.get_player_info(player)['in_hand'] #maybe une erreur de synthaxe ici
         if in_my_hand==0:
             return 'attack'
         else:
@@ -128,16 +128,16 @@ class AI(MorabarabaPlayer):
         return False, [],count
 
 
-    def possibilities2(self,state):
+    def possibilities2(self,state,player):
         """ Return all the possibilities for the game.
             prend en argument state et retourne toutes les possibilités d'actions du joueur en cours(self.position).
             ca prend le state, le copie, et applique toutes les actions possibles sur la copie, et retourne une liste
             de tous les states qui en resultent avec les actions qui les ont causés
         """
         possibilities2=[]
-        for move  in MorabarabaRules.get_player_actions(state, self.position):
+        for move  in MorabarabaRules.get_player_actions(state, player):
             temp_state = deepcopy(state)
-            MorabarabaRules.act(temp_state, move, self.position)
+            MorabarabaRules.act(temp_state, move, player)
             possibilities2.append([temp_state,'0', move])
             
         return possibilities2
@@ -147,16 +147,16 @@ class AI(MorabarabaPlayer):
         """ Return the best move for the game.
         """  
         # count=[0,0]
-        if depth == 0 or MorabarabaRules.is_end_game(state):
+        if depth == 0 :
             # print('depth', depth)
-            return self.evaluate(state, self.strategie(state)),None
+            return self.evaluate(state, self.strategie(state,maximizingPlayer),maximizingPlayer),None
 
         if maximizingPlayer==self.position:
             maxEval = -np.inf
             best_move = None
             # count[0]+=1
             # print('depth', depth)
-            for move in self.possibilities2(state):
+            for move in self.possibilities2(state,maximizingPlayer):
                 # count[1]+=1
                 evaluation = self.minimax(move[0], -self.position, depth - 1, alpha=np.inf, beta=-np.inf )[0]
                 # print('evaluation',evaluation, 'move', move)
@@ -179,14 +179,14 @@ class AI(MorabarabaPlayer):
             print('min')
             minEval = np.inf
             best_move = None
-            for move in self.possibilities2(state):
+            for move in self.possibilities2(state,maximizingPlayer):
                 evaluation = self.minimax(move[0], self.position, depth - 1, alpha=np.inf, beta=-np.inf )[0]
                 print('evaluation', evaluation, 'move', move)
                 minEval = min(minEval, evaluation)
                 if minEval==evaluation:
                     best_move=move[2]
                 beta = min(beta, minEval)
-                if maxEval <= alpha:
+                if minEval <= alpha:
                     print('maxEval <= alpha, break')
                     break
             # print('beta', beta)
