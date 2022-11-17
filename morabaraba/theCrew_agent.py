@@ -72,9 +72,8 @@ class AI(MorabarabaPlayer):
         # print('--------------------------------')
         # print('le leur', MorabarabaRules.random_play(state, self.position))
         # return MorabarabaRules.random_play(state, self.position)
-        # return self.which_actions_r_guessed_2_b_the_best(state, self.position)[0][1]
-        # 3 is the depth of the tree
-        return self.minimax(state, self.position, 2)[1]
+        return self.which_actions_r_guessed_2_b_the_best(state, self.position)[0][1]
+        # return self.minimax(state, self.position, 2)[1]
 
     def which_actions_r_guessed_2_b_the_best(self, state, player):
         actions = []
@@ -241,7 +240,7 @@ class AI(MorabarabaPlayer):
                             # print('random_play')
                     #------------------------------------------------------------------------------  
                     # Utiliser la technique du parcours de carrés
-                    if(my_possibilities["action"][0].get_action() == "ADD" and player==self.position):
+                    if(my_possibilities["action"][0].get_action() == "ADD"):
                         n = state.get_board().get_board_state().shape[0]
                         if(player == -1):
                             player_pieces = state.get_board().get_player_pieces_on_board(Color(player))
@@ -260,7 +259,7 @@ class AI(MorabarabaPlayer):
                             elif cell in player_pieces: cpt += 1
                         if cpt>0 and AI.next_square_vertex(self.vip_square, board_shape) not in opponent_pieces and AI.next_square_vertex(self.vip_square, board_shape) not in player_pieces:
                             self.vip_square = AI.next_square_head(self.vip_square, board_shape)
-                            print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 3")
+                            print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 3 3")
                         else:
                             print(self.vip_square)
                             vip_diagonal = AI.which_lines_pass_through(AI.next_square_head(self.vip_square, board_shape), board)["diagonal"]
@@ -272,7 +271,7 @@ class AI(MorabarabaPlayer):
                                     elif cell in player_pieces: cpt += 1
                                     cell = AI.next_square_vertex(cell, board_shape)
                                 if cpt>=0 and diagonal_hole not in opponent_pieces and diagonal_hole not in player_pieces:
-                                    print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 4")
+                                    print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 4 4")
                                     self.vip_square = diagonal_hole
                                     #  return 0, MorabarabaAction(action_type=MorabarabaActionType.ADD, to=self.vip_square)
                                     temp_state = deepcopy(state)
@@ -356,7 +355,7 @@ class AI(MorabarabaPlayer):
         if player==self.position:
             # print(actions)
             # if len(actions)==1:
-            if state.in_hand[player] == 0:
+            if state.in_hand[player] == 0 and len(state.get_board().get_all_empty_cells())>=15:
                 res2=MorabarabaRules.get_player_actions(state,player)
                 for move in res2:
                     print('-------------------------ajout---------------------')
@@ -395,7 +394,7 @@ class AI(MorabarabaPlayer):
                 if MorabarabaRules.is_legal_move(state, act[1], self.position)==False:
                     actions.remove(act)
                     print('-------------------------effacement illegal move---------------------')
-                
+            for act in actions:    
                 temp_state = deepcopy(state)
                 new_state = MorabarabaRules.make_move(
                     temp_state, act[1], self.position)[0]
