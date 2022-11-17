@@ -303,43 +303,43 @@ class AI(MorabarabaPlayer):
                         
             #------------------------------------------------------------------------------  
             # A T T A Q U E
-            possibilities = {}
-            possibilities['action'] = MorabarabaRules.get_player_actions(state, player)
-            possibilities['score'] = []
-            for possibility in possibilities['action']:
-                state_copy = MorabarabaState(state.get_board(), state.get_next_player())
-                state_copy.set_latest_move(state.get_latest_move())
-                state_copy.set_latest_player(state.get_latest_player())
-                state_copy.score = dict(state.score)
-                #state_copy.on_board = dict(state.on_board)
-                #state_copy.rewarding_move = state.rewarding_move
-                state_copy.just_stop = state.just_stop
-                state_copy.boring_moves = state.boring_moves
-                state_copy.mill = state.mill
-                state_copy.in_hand = state.in_hand.copy()
-                state_copy.fly_case = state.fly_case
-                state_copy.captured = state.captured
-                state_copy.latest_player1_move = state.latest_player1_move.copy()
-                state_copy.latest_player2_move = state.latest_player2_move.copy()
-                state_copy.before_latest_player1_move= state.before_latest_player1_move.copy()
-                state_copy.before_latest_player2_move= state.before_latest_player2_move.copy()
-                state_copy.fly_moves = state.fly_moves
-                MorabarabaRules.act(state_copy, possibility, player)
-                score, _ = self.minimax(state_copy, d-1, state.get_next_player())
-                #print(d, possibility, score)
-                possibilities['score'].append(score)
-            #print(possibilities['score'])
-            if(len(possibilities['score']) == 0):
-                if(player == self.position):
-                    return -9999999, None
-                else:
-                    return 9999999, None
-            if(player == self.position):
-                choice = random.choice(AI.value_indexes(possibilities['score'], max(possibilities['score'])))
-            else:
-                choice = random.choice(AI.value_indexes(possibilities['score'], min(possibilities['score'])))
-            print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 7")
-            return possibilities['score'][choice], possibilities['action'][choice]
+            # possibilities = {}
+            # possibilities['action'] = MorabarabaRules.get_player_actions(state, player)
+            # possibilities['score'] = []
+            # for possibility in possibilities['action']:
+            #     state_copy = MorabarabaState(state.get_board(), state.get_next_player())
+            #     state_copy.set_latest_move(state.get_latest_move())
+            #     state_copy.set_latest_player(state.get_latest_player())
+            #     state_copy.score = dict(state.score)
+            #     #state_copy.on_board = dict(state.on_board)
+            #     #state_copy.rewarding_move = state.rewarding_move
+            #     state_copy.just_stop = state.just_stop
+            #     state_copy.boring_moves = state.boring_moves
+            #     state_copy.mill = state.mill
+            #     state_copy.in_hand = state.in_hand.copy()
+            #     state_copy.fly_case = state.fly_case
+            #     state_copy.captured = state.captured
+            #     state_copy.latest_player1_move = state.latest_player1_move.copy()
+            #     state_copy.latest_player2_move = state.latest_player2_move.copy()
+            #     state_copy.before_latest_player1_move= state.before_latest_player1_move.copy()
+            #     state_copy.before_latest_player2_move= state.before_latest_player2_move.copy()
+            #     state_copy.fly_moves = state.fly_moves
+            #     MorabarabaRules.act(state_copy, possibility, player)
+            #     score, _ = self.minimax(state_copy, d-1, state.get_next_player())
+            #     #print(d, possibility, score)
+            #     possibilities['score'].append(score)
+            # #print(possibilities['score'])
+            # if(len(possibilities['score']) == 0):
+            #     if(player == self.position):
+            #         return -9999999, None
+            #     else:
+            #         return 9999999, None
+            # if(player == self.position):
+            #     choice = random.choice(AI.value_indexes(possibilities['score'], max(possibilities['score'])))
+            # else:
+            #     choice = random.choice(AI.value_indexes(possibilities['score'], min(possibilities['score'])))
+            # print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 7")
+            # return possibilities['score'][choice], possibilities['action'][choice]
             #------------------------------------------------------------------------------  
      
         # print('random')
