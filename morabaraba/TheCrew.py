@@ -10,7 +10,7 @@ from copy import deepcopy
 
 
 class AI(MorabarabaPlayer):
-    name = "®©v2.0"
+    name = "The Crew"
 
     def __init__(self, color):
         super(AI, self).__init__(color)
@@ -55,7 +55,7 @@ class AI(MorabarabaPlayer):
             you can retrieve the coordinates of a cell through the alias or vice versa
             Example : Retrieve cell coordinates of b2 is equivalent to : state.get_board().coordinates('b2'), which return (1, 1)
             Example : Retrieve alias of cell with coordinates (1, 1) is equivalent to : state.get_board().names((1,1)), which return 'b2'  
-    
+
         Args:
             action_type (MorabarabaActionType): The type of the performed action.
         """
@@ -85,7 +85,7 @@ class AI(MorabarabaPlayer):
         #res = {"vertical":[cell], "horizontal":[cell]}
         res = {"vertical": [], "horizontal": []}
         semi_shape = board._board_state.shape[0]//2
-        #horizontal
+        # horizontal
         if cell[0] == semi_shape:
             a = range((abs(cell[1]-1) // cell[0]) * (cell[0]+1),
                       (abs(cell[1]-1) // cell[0]) * (cell[0]+1) + cell[0])
@@ -98,7 +98,7 @@ class AI(MorabarabaPlayer):
         for i in a:
             if (cell[0], i) != cell:
                 res["horizontal"].append((cell[0], i))
-        #vertical
+        # vertical
         if cell[1] == semi_shape:
             b = range((abs(cell[0]-1) // cell[1]) * (cell[1]+1),
                       (abs(cell[0]-1) // cell[1]) * (cell[1]+1) + cell[1])
@@ -111,7 +111,7 @@ class AI(MorabarabaPlayer):
         for i in b:
             if (i, cell[1]) != cell:
                 res["vertical"].append((i, cell[1]))
-        #diagonal
+        # diagonal
         _, on_diagonal = AI.is_an_end_of_square(cell, board)
         if(on_diagonal):
             #res["diagonal"] = [cell]
@@ -290,7 +290,7 @@ class AI(MorabarabaPlayer):
         if(0):
             return 0, random_play(state, player)
         else:
-            #premier coup
+            # premier coup
             if(len(state.get_board().get_player_pieces_on_board(Color(player))) == 0):
                 return [MorabarabaRules.random_play(state, player)]
             # D É F E N S E
@@ -299,8 +299,8 @@ class AI(MorabarabaPlayer):
             opponent_mills_list = []
             res = []
             if(state.mill):
-                #Empêcher ses mills par mes STEAL
-                #Faire un deepcopy à la place
+                # Empêcher ses mills par mes STEAL
+                # Faire un deepcopy à la place
                 state_copy = MorabarabaState(
                     state.get_board(), state.get_next_player())
                 state_copy.set_latest_move(state.get_latest_move())
@@ -353,7 +353,7 @@ class AI(MorabarabaPlayer):
                         else:
                             max_score -= 1
             else:
-                #Voir si je peux faire mill
+                # Voir si je peux faire mill
                 my_possibilities = {}
                 my_possibilities['action'] = np.array(
                     MorabarabaRules.get_player_actions(state, player))
@@ -374,7 +374,7 @@ class AI(MorabarabaPlayer):
                     if my_possibilities['score_mill'].any():
                         return my_possibilities['action'][my_possibilities['score_mill'] == my_possibilities['score_mill'][my_possibilities['score_mill'] > 0].min()].tolist()
 
-                #Empêcher ses mills par mes ADD, MOVE ou FLY
+                # Empêcher ses mills par mes ADD, MOVE ou FLY
                 opponent_possibilities['action'] = np.array(
                     MorabarabaRules.get_player_actions(state, player * -1))
                 if(len(opponent_possibilities['action']) != 0):
@@ -403,8 +403,8 @@ class AI(MorabarabaPlayer):
                         else:
                             max_score -= 1
 
-                    #Utiliser la technique du parcours de carrés
-                    #if(my_possibilities["action"][0].get_action() == "ADD"):
+                    # Utiliser la technique du parcours de carrés
+                    # if(my_possibilities["action"][0].get_action() == "ADD"):
                     #    n = state.get_board().get_board_state().shape[0]
                     #    if(player == -1):
                     #        player_pieces = state.get_board().get_player_pieces_on_board(Color(player))
@@ -439,7 +439,7 @@ class AI(MorabarabaPlayer):
                     #                self.vip_square = diaginal_hole
                     #                return 0, MorabarabaAction(action_type=MorabarabaActionType.ADD, to=self.vip_square)
 
-                    #Voir s'il y a une double menace à empêcher
+                    # Voir s'il y a une double menace à empêcher
                     #print("|||||", self.solve_a_menace_from(-1*self.position, state))
                     menace, cellToBock = self.solve_a_menace_from(
                         -1*player, state)
@@ -456,7 +456,7 @@ class AI(MorabarabaPlayer):
                     return my_possibilities['action'][my_possibilities['score_making_mill'] == my_possibilities['score_making_mill'].max()].tolist()
 
     def notMinimax(self, state, player):
-        #Si c'est le premier coup
+        # Si c'est le premier coup
         if(len(state.get_board().get_player_pieces_on_board(Color(player))) == 0):
             if self.vip_square == None and sum(state.score.values()) == 0:
                 n = state.get_board().get_board_state().shape[0]
@@ -477,7 +477,7 @@ class AI(MorabarabaPlayer):
             opponent_possibilities['score'] = []
             opponent_mills_list = []
             if(state.mill):
-                #Empêcher ses mills par mes STEAL
+                # Empêcher ses mills par mes STEAL
                 state_copy = MorabarabaState(
                     state.get_board(), state.get_next_player())
                 state_copy.set_latest_move(state.get_latest_move())
@@ -526,7 +526,7 @@ class AI(MorabarabaPlayer):
                                     ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 11")
                                 return maxScore, act
 
-                #Voir si supprimer un de ses joueurs m'aide à faire mill au prochain coup
+                # Voir si supprimer un de ses joueurs m'aide à faire mill au prochain coup
                 my_possibilities = {}
                 my_possibilities['action'] = MorabarabaRules.get_player_actions(
                     state, player)
@@ -555,7 +555,7 @@ class AI(MorabarabaPlayer):
                                         ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 12")
                                     return 0, possibility
             else:
-                #Voir si je peux faire mill
+                # Voir si je peux faire mill
                 my_possibilities = {}
                 my_possibilities['action'] = MorabarabaRules.get_player_actions(
                     state, player)
@@ -579,7 +579,7 @@ class AI(MorabarabaPlayer):
                                 ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 1")
                             return minNotNullScore, my_possibilities['action'][my_possibilities['score_mill'].index(minNotNullScore)]
 
-                #Empêcher ses mills par mes ADD, MOVE ou FLY
+                # Empêcher ses mills par mes ADD, MOVE ou FLY
                 opponent_possibilities['action'] = MorabarabaRules.get_player_actions(
                     state, player * -1)
                 if(len(opponent_possibilities['action']) != 0):
@@ -605,7 +605,7 @@ class AI(MorabarabaPlayer):
                                     if(possibility.get_action_as_dict()['action']['to'] == actionToBlock['to']):
                                         return maxScore, possibility
 
-                    #Utiliser la technique du parcours de carrés
+                    # Utiliser la technique du parcours de carrés
                     if(my_possibilities["action"][0].get_action() == "ADD"):
                         n = state.get_board().get_board_state().shape[0]
                         if(player == -1):
@@ -658,7 +658,7 @@ class AI(MorabarabaPlayer):
                                             ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 4")
                                         return 0, act
 
-                    #Voir s'il y a une double menace à empêcher
+                    # Voir s'il y a une double menace à empêcher
                     #print("|||||", self.solve_a_menace_from(-1*self.position, state))
                     menace, cellToBock = self.solve_a_menace_from(
                         -1*self.position, state)
@@ -669,7 +669,7 @@ class AI(MorabarabaPlayer):
                                     ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 5")
                                 return 0, possibility
 
-                #Voir si je peux construire un mill
+                # Voir si je peux construire un mill
                 sorted_making_mill_scores = sorted(
                     my_possibilities['score_making_mill'], reverse=True)
                 for maxNotNullScore in sorted_making_mill_scores:
