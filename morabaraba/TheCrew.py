@@ -10,7 +10,7 @@ from copy import deepcopy
 
 
 class AI(MorabarabaPlayer):
-    name = "The Crew"
+    name = "The Crew sample"
 
     def __init__(self, color):
         super(AI, self).__init__(color)
