@@ -10,9 +10,7 @@ from copy import deepcopy
 
 
 class AI(MorabarabaPlayer):
-<<<<<<< HEAD
     name = "TheCrew"
->>>>>>> c3d71057500d2f5ea6f0ec03061d6773f6cfad70
 
     def __init__(self, color):  
         super(AI, self).__init__(color)
@@ -270,7 +268,7 @@ class AI(MorabarabaPlayer):
             if(state.mill):
                 #Empêcher ses mills par mes STEAL
                 #Faire un deepcopy à la place
-                state_copy = MorabarabaState(state.get_board(), state.get_next_player())
+                """state_copy = MorabarabaState(state.get_board(), state.get_next_player())
                 state_copy.set_latest_move(state.get_latest_move())
                 state_copy.set_latest_player(state.get_latest_player())
                 state_copy.score = dict(state.score)
@@ -284,7 +282,8 @@ class AI(MorabarabaPlayer):
                 state_copy.latest_player2_move = state.latest_player2_move.copy()
                 state_copy.before_latest_player1_move= state.before_latest_player1_move.copy()
                 state_copy.before_latest_player2_move= state.before_latest_player2_move.copy()
-                state_copy.fly_moves = state.fly_moves
+                state_copy.fly_moves = state.fly_moves"""
+                state_copy = deepcopy(state)
                 opponent_possibilities['action'] = np.array(MorabarabaRules.get_player_actions(state_copy, player * -1))
                 if(len(opponent_possibilities['action']) != 0):
                     for possibility in opponent_possibilities['action']:
@@ -426,7 +425,7 @@ class AI(MorabarabaPlayer):
             opponent_mills_list = []
             if(state.mill):
                 #Empêcher ses mills par mes STEAL
-                state_copy = MorabarabaState(state.get_board(), state.get_next_player())
+                """state_copy = MorabarabaState(state.get_board(), state.get_next_player())
                 state_copy.set_latest_move(state.get_latest_move())
                 state_copy.set_latest_player(state.get_latest_player())
                 state_copy.score = dict(state.score)
@@ -440,7 +439,8 @@ class AI(MorabarabaPlayer):
                 state_copy.latest_player2_move = state.latest_player2_move.copy()
                 state_copy.before_latest_player1_move= state.before_latest_player1_move.copy()
                 state_copy.before_latest_player2_move= state.before_latest_player2_move.copy()
-                state_copy.fly_moves = state.fly_moves
+                state_copy.fly_moves = state.fly_moves"""
+                state_copy = deepcopy(state)
                 opponent_possibilities['action'] = MorabarabaRules.get_player_actions(state_copy, player * -1)
                 if(len(opponent_possibilities['action']) != 0):
                     for possibility in opponent_possibilities['action']:
