@@ -301,22 +301,23 @@ class AI(MorabarabaPlayer):
             if(state.mill):
                 #Empêcher ses mills par mes STEAL
                 #Faire un deepcopy à la place
-                state_copy = MorabarabaState(
-                    state.get_board(), state.get_next_player())
-                state_copy.set_latest_move(state.get_latest_move())
-                state_copy.set_latest_player(state.get_latest_player())
-                state_copy.score = dict(state.score)
-                state_copy.just_stop = state.just_stop
-                state_copy.boring_moves = state.boring_moves
-                state_copy.mill = False
-                state_copy.in_hand = state.in_hand.copy()
-                state_copy.fly_case = state.fly_case
-                state_copy.captured = state.captured
-                state_copy.latest_player1_move = state.latest_player1_move.copy()
-                state_copy.latest_player2_move = state.latest_player2_move.copy()
-                state_copy.before_latest_player1_move = state.before_latest_player1_move.copy()
-                state_copy.before_latest_player2_move = state.before_latest_player2_move.copy()
-                state_copy.fly_moves = state.fly_moves
+                state_copy = deepcopy(state)
+                # state_copy = MorabarabaState(
+                #     state.get_board(), state.get_next_player())
+                # state_copy.set_latest_move(state.get_latest_move())
+                # state_copy.set_latest_player(state.get_latest_player())
+                # state_copy.score = dict(state.score)
+                # state_copy.just_stop = state.just_stop
+                # state_copy.boring_moves = state.boring_moves
+                # state_copy.mill = False
+                # state_copy.in_hand = state.in_hand.copy()
+                # state_copy.fly_case = state.fly_case
+                # state_copy.captured = state.captured
+                # state_copy.latest_player1_move = state.latest_player1_move.copy()
+                # state_copy.latest_player2_move = state.latest_player2_move.copy()
+                # state_copy.before_latest_player1_move = state.before_latest_player1_move.copy()
+                # state_copy.before_latest_player2_move = state.before_latest_player2_move.copy()
+                # state_copy.fly_moves = state.fly_moves
                 opponent_possibilities['action'] = np.array(
                     MorabarabaRules.get_player_actions(state_copy, player * -1))
                 if(len(opponent_possibilities['action']) != 0):
@@ -478,7 +479,8 @@ class AI(MorabarabaPlayer):
             opponent_mills_list = []
             if(state.mill):
                 #Empêcher ses mills par mes STEAL
-                state_copy = MorabarabaState(
+                state_copy = deepcopy(state)
+                """state_copy = MorabarabaState(
                     state.get_board(), state.get_next_player())
                 state_copy.set_latest_move(state.get_latest_move())
                 state_copy.set_latest_player(state.get_latest_player())
@@ -493,7 +495,7 @@ class AI(MorabarabaPlayer):
                 state_copy.latest_player2_move = state.latest_player2_move.copy()
                 state_copy.before_latest_player1_move = state.before_latest_player1_move.copy()
                 state_copy.before_latest_player2_move = state.before_latest_player2_move.copy()
-                state_copy.fly_moves = state.fly_moves
+                state_copy.fly_moves = state.fly_moves"""
                 opponent_possibilities['action'] = MorabarabaRules.get_player_actions(
                     state_copy, player * -1)
                 if(len(opponent_possibilities['action']) != 0):
