@@ -393,7 +393,8 @@ class AI(MorabarabaPlayer):
             for act in actions:
                 if MorabarabaRules.is_legal_move(state, act[1], self.position)==False:
                     actions.remove(act)
-                    print('-------------------------effacement illegal move---------------------')
+                    
+                    print('------------------------effacement illegal move--------------------')
             for act in actions:    
                 temp_state = deepcopy(state)
                 new_state = MorabarabaRules.make_move(
