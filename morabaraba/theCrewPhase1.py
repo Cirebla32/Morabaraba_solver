@@ -31,6 +31,7 @@ class AI(MorabarabaPlayer):
                 {'soudure':(4,4),'horizontal':[(4,2),(4,3)],'vertical':[(3,4),(2,4)],'diagonal':[(5,5),(6,6)]},
                 {'soudure':(4,2),'horizontal':[(4,4),(4,3)],'vertical':[(3,2),(2,2)],'diagonal':[(5,1),(6,0)]}
                 ]
+        self.count_square_method = 4
 
     def play(self, state, remain_time):
         """ Return Morabara action.
@@ -50,7 +51,9 @@ class AI(MorabarabaPlayer):
         board_ndArray = state.get_board()._board_state.__copy__()
         board_ndArray[board_ndArray == Color(-1)] = 2
         board_ndArray[board_ndArray == Color(1)] = Color(-1) 
-        board_ndArray[board_ndArray == 2] = Color(1)
+        board_ndArray[board_ndArray == 2] = Color(1)        
+        # self.count_square_method -= 1
+        print(self.count_square_method)
         self.inverse_board._board_state = board_ndArray
         _, act = self.notMinimax(state, self.position)
         return act
@@ -524,42 +527,45 @@ class AI(MorabarabaPlayer):
                                         return maxScore, possibility
 
                     #Utiliser la technique du parcours de carrés
-                    if(my_possibilities["action"][0].get_action() == "ADD"):
-                        n = state.get_board().get_board_state().shape[0]
-                        if(player == -1):
-                            player_pieces = state.get_board().get_player_pieces_on_board(Color(player))
-                            opponent_pieces = self.inverse_board.get_player_pieces_on_board(Color(player))
-                        else:
-                            player_pieces = self.inverse_board.get_player_pieces_on_board(Color(-1 * player))
-                            opponent_pieces = state.get_board().get_player_pieces_on_board(Color(-1 * player))
-                        board = state.get_board()
-                        board_shape = board.get_board_state().shape
-                        cell = self.vip_square
-                        cpt = 0
-                        for i in range(n+1):
-                            cell = AI.next_square_vertex(cell, board_shape)
-                            if cell in opponent_pieces: cpt -= 1
-                            elif cell in player_pieces: cpt += 1
-                        if cpt>0 and AI.next_square_vertex(self.vip_square, board_shape) not in opponent_pieces and AI.next_square_vertex(self.vip_square, board_shape) not in player_pieces:
-                            self.vip_square = AI.next_square_head(self.vip_square, board_shape)
-                            act = MorabarabaAction(action_type=MorabarabaActionType.ADD, to=self.vip_square)
-                            if MorabarabaRules.is_legal_move(state, act, player):
-                                return 0, act
-                        else:
-                            print(self.vip_square)
-                            vip_diagonal = AI.which_lines_pass_through(AI.next_square_head(self.vip_square, board_shape), board)["diagonal"]
-                            for diaginal_hole in vip_diagonal:
-                                cpt = 0
-                                cell = diaginal_hole
-                                for i in range(n+1):
-                                    if cell in opponent_pieces: cpt -= 1
-                                    elif cell in player_pieces: cpt += 1
-                                    cell = AI.next_square_vertex(cell, board_shape)
-                                if cpt>=0 and diaginal_hole not in opponent_pieces and diaginal_hole not in player_pieces:
-                                    self.vip_square = diaginal_hole
-                                    act = MorabarabaAction(action_type=MorabarabaActionType.ADD, to=self.vip_square)
-                                    if MorabarabaRules.is_legal_move(state, act, player):
-                                        return 0, act
+                    if(self.count_square_method >= 0):
+                        if(my_possibilities["action"][0].get_action() == "ADD"):
+                            self.count_square_method -= 1
+                            print('used')
+                            n = state.get_board().get_board_state().shape[0]
+                            if(player == -1):
+                                player_pieces = state.get_board().get_player_pieces_on_board(Color(player))
+                                opponent_pieces = self.inverse_board.get_player_pieces_on_board(Color(player))
+                            else:
+                                player_pieces = self.inverse_board.get_player_pieces_on_board(Color(-1 * player))
+                                opponent_pieces = state.get_board().get_player_pieces_on_board(Color(-1 * player))
+                            board = state.get_board()
+                            board_shape = board.get_board_state().shape
+                            cell = self.vip_square
+                            cpt = 0
+                            for i in range(n+1):
+                                cell = AI.next_square_vertex(cell, board_shape)
+                                if cell in opponent_pieces: cpt -= 1
+                                elif cell in player_pieces: cpt += 1
+                            if cpt>0 and AI.next_square_vertex(self.vip_square, board_shape) not in opponent_pieces and AI.next_square_vertex(self.vip_square, board_shape) not in player_pieces:
+                                self.vip_square = AI.next_square_head(self.vip_square, board_shape)
+                                act = MorabarabaAction(action_type=MorabarabaActionType.ADD, to=self.vip_square)
+                                if MorabarabaRules.is_legal_move(state, act, player):
+                                    return 0, act
+                            else:
+                                print(self.vip_square)
+                                vip_diagonal = AI.which_lines_pass_through(AI.next_square_head(self.vip_square, board_shape), board)["diagonal"]
+                                for diaginal_hole in vip_diagonal:
+                                    cpt = 0
+                                    cell = diaginal_hole
+                                    for i in range(n+1):
+                                        if cell in opponent_pieces: cpt -= 1
+                                        elif cell in player_pieces: cpt += 1
+                                        cell = AI.next_square_vertex(cell, board_shape)
+                                    if cpt>=0 and diaginal_hole not in opponent_pieces and diaginal_hole not in player_pieces:
+                                        self.vip_square = diaginal_hole
+                                        act = MorabarabaAction(action_type=MorabarabaActionType.ADD, to=self.vip_square)
+                                        if MorabarabaRules.is_legal_move(state, act, player):
+                                            return 0, act
 
                     #Voir s'il y a une double menace à empêcher
                     menace, cellToBock = self.solve_a_menace_from(-1*self.position, state)
