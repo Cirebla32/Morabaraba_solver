@@ -10,7 +10,7 @@ from copy import deepcopy
 
 
 class AI(MorabarabaPlayer):
-    name = "TheCrewPhase2"
+    name = "TheCrewPhase2v3"
 
     def __init__(self, color):  
         super(AI, self).__init__(color)
@@ -496,16 +496,11 @@ class AI(MorabarabaPlayer):
 
                 #Empêcher ses mills par mes ADD, MOVE ou FLY
                 opponent_possibilities['action'] = MorabarabaRules.get_player_actions(state, player * -1)
-                opponent_possibilities['mills_in_construction'] = []
-                opponent_possibilities['score_making_mill'] = []
                 if(len(opponent_possibilities['action']) != 0):
                     for possibility in opponent_possibilities['action']:
                         _, mills = self.is_a_mill_move(state, player * -1, possibility)
                         opponent_mills_list.append(mills)
                         opponent_possibilities['score'].append(len(mills))
-                        _, mills_in_construction = self.is_making_mill(state, -1*player, possibility)
-                        opponent_possibilities['score_making_mill'].append(len(mills_in_construction))
-                        opponent_possibilities['mills_in_construction'].append(mills_in_construction)
                     maxScore = max(opponent_possibilities['score'])
                     if(maxScore):
                         actionToBlock = opponent_possibilities['action'][opponent_possibilities['score'].index(maxScore)].get_action_as_dict()['action']
@@ -596,48 +591,6 @@ class AI(MorabarabaPlayer):
                         my_possibilities['action'].pop(my_possibilities['score_making_mill'].index(maxNotNullScore))
                         my_possibilities['mills_in_construction'].pop(my_possibilities['score_making_mill'].index(maxNotNullScore))
                         my_possibilities['score_making_mill'].pop(my_possibilities['score_making_mill'].index(maxNotNullScore))
-
-
-                #Voir s'il peux construire un mill et si oui, l'empêcher
-                my_possibilities['action'] = MorabarabaRules.get_player_actions(state, player)
-                sorted_making_mill_scores = sorted(opponent_possibilities['score_making_mill'], reverse=True)
-                for maxNotNullScore in sorted_making_mill_scores:
-                    if(maxNotNullScore):
-                        actionToBlock = opponent_possibilities['action'][opponent_possibilities['score_making_mill'].index(maxNotNullScore)]
-                        if my_possibilities['action'][0].get_action_as_dict()["action_type"] == MorabarabaActionType.ADD: 
-                            act = MorabarabaAction(action_type=MorabarabaActionType.ADD, to=actionToBlock.get_action_as_dict()['action']['to'])
-                            if MorabarabaRules.is_legal_move(state, act, player):
-                                print(">>>>>>>>>>>>>>>>>>>|||||||||||YEAH 1||||||||<<<<<<<<<<<<<<<<<<")
-                                return 0, act
-                        elif not AI.is_my_move_putting_me_in_danger(state, actionToBlock, -1*player):
-                            mills_in_construction = opponent_possibilities['mills_in_construction'][opponent_possibilities['score_making_mill'].index(maxNotNullScore)]
-                            #Voir si l'une de ces possibilités peut être concrétisée au prochain tour
-                            state_copy = deepcopy(state)
-                            old_inverse = deepcopy(self.inverse_board._board_state)
-                            MorabarabaRules.make_move(state_copy, actionToBlock, -1*player)
-                            board_ndArray = state_copy.get_board()._board_state.__copy__()
-                            board_ndArray[board_ndArray == Color(-1)] = 2
-                            board_ndArray[board_ndArray == Color(1)] = Color(-1) 
-                            board_ndArray[board_ndArray == 2] = Color(1)
-                            self.inverse_board._board_state = board_ndArray
-                            empty_cells = []
-                            for mill in mills_in_construction:
-                                for cell in mill:
-                                    if state_copy.get_board().is_empty_cell(cell):
-                                        empty_cells.append(cell)
-                            depth2_possibilities = MorabarabaRules.get_player_actions(state_copy, -1*player)
-                            for depth2_possibility in depth2_possibilities:
-                                if depth2_possibility.get_action_as_dict()['action']['to'] in empty_cells:
-                                    can_mill, mills = self.is_a_mill_move(state_copy, -1*player, depth2_possibility)
-                                    if(can_mill):
-                                        for possibility in my_possibilities['action']:
-                                            if possibility.get_action_as_dict()['action']['to'] == actionToBlock.get_action_as_dict()['action']['to'] and not AI.is_my_move_putting_me_in_danger(state, possibility, player):
-                                                print(">>>>>>>>>>>>>>>>>>>|||||||||||YEAH 2||||||||<<<<<<<<<<<<<<<<<<")
-                                                return 0, possibility
-                            self.inverse_board._board_state = old_inverse
-                        opponent_possibilities['action'].pop(opponent_possibilities['score_making_mill'].index(maxNotNullScore))
-                        opponent_possibilities['mills_in_construction'].pop(opponent_possibilities['score_making_mill'].index(maxNotNullScore))
-                        opponent_possibilities['score_making_mill'].pop(opponent_possibilities['score_making_mill'].index(maxNotNullScore))
 
             # A T T A Q U E si mon mouvement ne me met pas en danger
             for possibility in my_possibilities['action']:
