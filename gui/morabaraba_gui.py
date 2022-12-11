@@ -180,7 +180,7 @@ class MorabarabaGUI(QMainWindow):
             MorabarabaRules.moment_player(self.state)
             self.current_player = self.state.get_next_player()
             return True
-                                   
+
     def play_game(self):
         hit = 0
         timer_first_player = Timer("first_player", total_time=self.allowed_time, logger=None)
@@ -204,15 +204,17 @@ class MorabarabaGUI(QMainWindow):
                     print("An illegal move were given. Performing a random move")
                     print(f"Lunching a random move for {turn}, and reward is {state.mill}")
                     action = MorabarabaRules.random_play(state, turn)  # TODO: Should we use the original state?
+                    self.step(action)
 
             else:
                 print("Not remain time for ", turn, " Performing a random move")
                 print(f"Lunching a random move for {turn}, and reward is {state.mill}")
                 action = MorabarabaRules.random_play(state, turn)  # TODO: Should we use the original state?
+                self.step(action)
             self._update_gui()
             self.trace.add(self.state)
             self.players[turn].update_player_infos(self.get_player_info(turn))
-            MorabarabaRules.moment_player(state)
+            #MorabarabaRules.moment_player(state)
             turn = self.state.get_next_player()
         self._update_gui()
         self._results()
